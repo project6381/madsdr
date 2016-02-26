@@ -1,37 +1,48 @@
 import panel
 import elevator
 import constants
+import time
 from threading import Thread
 from threading import Lock
 
-queue = {}
 
 mutexKey = Lock()
+queue = {}
+
+for x in range(0, constants.N_FLOORS):
+	queue[x] = 0
+print queue
+
 
 def set_floor():
 	goFloor = 1
 	while True:
-		#mutexKey.acquire()
+		mutexKey.acquire()
 		for x in range(0,constants.N_FLOORS):
 			if (x in queue) and queue[x] == 1:
 				if lastFloor == goFloor:
 					goFloor = x
-					print (goFloor)
-				elif (x < goFloor) and (lastFloor < goFloor):
+					print (goFloor, 1)
+				elif (lastFloor < goFloor) and (x < goFloor) and (x > lastFloor):
 					goFloor = x
-					print (goFloor)
-				elif (x > goFloor) and (lastFloor > goFloor):
+					print (goFloor, 2)
+				elif (lastFloor > goFloor) and (x > goFloor) and (x < lastFloor):
 					goFloor = x
-					print (goFloor)
-		#mutexKey.release()
+					print (goFloor, 3)
+		mutexKey.release()
+
+		checkFloor = elevator.last_floor()
+		if checkFloor >= 0:
+			lastFloor = checkFloor 
 
 		elevator.go_to_floor(goFloor)
 
-		lastFloor = elevator.last_floor()
 		if (lastFloor == goFloor):
-			#mutexKey.acquire()
+			mutexKey.acquire()
 			queue[goFloor] = 0
-			#mutexKey.release()
+			time.sleep(1)
+			mutexKey.release()
+
 
 		#mutexKey.acquire()	
 		#print (queue)
@@ -40,18 +51,13 @@ def set_floor():
 
 def set_queue():
 
-	#mutexKey.acquire()
-	for x in range(0, constants.N_FLOORS):
-		queue[x] = 0
-	print queue
-	#mutexKey.release()
 	while True:
 		
 		nextFloor = panel.read_buttons()
 		if nextFloor >= 0:
-			#mutexKey.acquire()
+			mutexKey.acquire()
 			queue[nextFloor]=1
-			#mutexKey.release()
+			mutexKey.release()
 
 
 
