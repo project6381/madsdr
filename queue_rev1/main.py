@@ -9,26 +9,26 @@ from threading import Lock
 mutexKey = Lock()
 queue = {}
 
-for x in range(0, constants.N_FLOORS):
-	queue[x] = 0
-print queue
-
 
 def set_floor():
 	goFloor = 1
 	while True:
+
 		mutexKey.acquire()
 		for x in range(0,constants.N_FLOORS):
 			if (x in queue) and queue[x] == 1:
-				if lastFloor == goFloor:
-					goFloor = x
-					print (goFloor, 1)
-				elif (lastFloor < goFloor) and (x < goFloor) and (x > lastFloor):
-					goFloor = x
-					print (goFloor, 2)
-				elif (lastFloor > goFloor) and (x > goFloor) and (x < lastFloor):
-					goFloor = x
-					print (goFloor, 3)
+					if lastFloor == goFloor:
+						goFloor = x
+						print (goFloor, 1)
+					elif (lastFloor < goFloor) and (x < goFloor) and (x > lastFloor):
+						goFloor = x
+						print (goFloor, 2)
+					elif (lastFloor > goFloor) and (x > goFloor) and (x < lastFloor):
+						goFloor = x
+						print (goFloor, 3)
+			else:
+				queue[x]=0
+
 		mutexKey.release()
 
 		checkFloor = elevator.last_floor()
