@@ -7,6 +7,10 @@ panel = PanelInterface.PanelInterface()
 
 def go_to_floor(nextFloor):
 	
+	lastFloor = nextFloor + 1
+
+	#while True:
+
 	lastFloor = elevator.get_floor_sensor_signal()
 
 	if lastFloor >= 0:
@@ -26,9 +30,9 @@ def go_to_floor(nextFloor):
 		else:
 			elevator.set_motor_direction(constants.DIRN_UP)
 
-	if panel.get_stop_signal() == 1:
-		elevator.set_motor_direction(constants.DIRN_STOP)
-		return 0	
+		if panel.get_stop_signal() == 1:
+			elevator.set_motor_direction(constants.DIRN_STOP)
+			return 0	
 		
 def last_floor():
 	return elevator.get_floor_sensor_signal()
