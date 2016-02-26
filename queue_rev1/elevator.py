@@ -1,15 +1,12 @@
 import ElevInterface
 import PanelInterface
 import constants
+import time
 
 elevator = ElevInterface.ElevInterface()
 panel = PanelInterface.PanelInterface()
 
 def go_to_floor(nextFloor):
-	
-	lastFloor = nextFloor + 1
-
-	#while True:
 
 	lastFloor = elevator.get_floor_sensor_signal()
 
@@ -18,6 +15,7 @@ def go_to_floor(nextFloor):
 			elevator.set_motor_direction(constants.DIRN_STOP)
 			#print 'you reached your destination'
 			panel.set_door_open_lamp(1)
+			time.sleep(2)
 			return 0
 		elif lastFloor < nextFloor:
 			panel.set_door_open_lamp(0)
