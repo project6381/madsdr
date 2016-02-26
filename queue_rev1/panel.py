@@ -11,3 +11,4 @@ def read_buttons():
 			elif panel.get_button_signal(button,floor):
 				lastFloor = floor
 				return floor
+	return -1

@@ -4,20 +4,22 @@ import elevator
 def main():
 	#floorDestination = int(raw_input("->"))
 
-	nextFloor=1
-	lastFloor=1
+	nextFloor = 1
+	lastFloor = 1
+	goFloor = 1
+	printFloor = 1
+
 
 	while True:
 	
-		lastFloor = elevator.last_floor()
-		if panel.read_buttons() >= 0:
-			nextFloor = panel.read_buttons()
-			elevator.go_to_floor(nextFloor)
-		print 'Next floor %i, Last floor %i' % (nextFloor, lastFloor)
-
-
-
-
+		#lastFloor = elevator.last_floor()
+		nextFloor = panel.read_buttons()
+		if nextFloor >= 0:
+			goFloor = nextFloor
+			if nextFloor != printFloor:
+				print (goFloor, lastFloor)
+				printFloor = goFloor
+		elevator.go_to_floor(goFloor)
 		
 
 
