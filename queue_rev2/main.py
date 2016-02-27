@@ -19,19 +19,20 @@ def queue_floor():
 		x_min = constants.N_FLOORS-1
 
 		for x in range(0,constants.N_FLOORS):
-			if (x in queue) and queue[x] == 1:
-				x_max = max(x_max,x)
-				x_min = min(x_min,x)
-				if (lastFloor == goFloor) and (direction != "DOWN") and (goFloor < x_max):
-					goFloor = x
-					direction = "UP"
-				elif (lastFloor == goFloor) and (direction != "UP") and (goFloor > x_min):
-					goFloor = x
-					direction = "DOWN"
-				elif (lastFloor < goFloor) and (x < goFloor) and (x > lastFloor):
-					goFloor = x
-				elif (lastFloor > goFloor) and (x > goFloor) and (x < lastFloor):
-					goFloor = x
+			if (x in queue):
+				if queue[x] == 1:
+					x_max = max(x_max,x)
+					x_min = min(x_min,x)
+					if (lastFloor == goFloor) and (direction != "DOWN") and (goFloor < x_max):
+						goFloor = x
+						direction = "UP"
+					elif (lastFloor == goFloor) and (direction != "UP") and (goFloor > x_min):
+						goFloor = x
+						direction = "DOWN"
+					elif (lastFloor < goFloor) and (x < goFloor) and (x > lastFloor):
+						goFloor = x
+					elif (lastFloor > goFloor) and (x > goFloor) and (x < lastFloor):
+						goFloor = x
 			else:
 				queueKey.acquire()
 				queue[x]=0
