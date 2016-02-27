@@ -6,7 +6,7 @@ from threading import Thread
 from threading import Lock
 
 
-mutexKey = Lock()
+queueKey = Lock()
 queue = {}
 
 
@@ -15,7 +15,6 @@ def queue_floor():
 	lastFloor = 2
 	direction = "None"
 	while True:
-		#mutexKey.acquire()
 		x_max = 0
 		x_min = constants.N_FLOORS-1
 
@@ -23,36 +22,25 @@ def queue_floor():
 			if (x in queue) and queue[x] == 1:
 				x_max = max(x_max,x)
 				x_min = min(x_min,x)
-				#print (x_min, x)
 				if (lastFloor == goFloor) and (direction != "DOWN") and (goFloor < x_max):
 					goFloor = x
 					direction = "UP"
-					#print "GOIN UP 1"
 				elif (lastFloor == goFloor) and (direction != "UP") and (goFloor > x_min):
 					goFloor = x
 					direction = "DOWN"
-					#print "GOIN DOWN 1"
 				elif (lastFloor < goFloor) and (x < goFloor) and (x > lastFloor):
 					goFloor = x
-					#direction = "UP"
-					#print "GOIN UP 2"
 				elif (lastFloor > goFloor) and (x > goFloor) and (x < lastFloor):
 					goFloor = x
-					#direction = "DOWN"
-					#print "GOIN DOWN 2"
 			else:
-				mutexKey.acquire()
+				queueKey.acquire()
 				queue[x]=0
-				mutexKey.release()
+				queueKey.release()
 
 		if (direction == "UP") and (x_max <= lastFloor):
 			direction = "None"
 		elif (direction == "DOWN") and (x_min >= lastFloor):
 			direction = "None"
-			
-		#print(direction)
-		#print(x_max, x_min)
-		#mutexKey.release()
 
 		checkFloor = elevator.last_floor()
 		if checkFloor >= 0:
@@ -61,15 +49,10 @@ def queue_floor():
 		elevator.go_to_floor(goFloor)
 
 		if (lastFloor == goFloor):
-			mutexKey.acquire()
+			queueKey.acquire()
 			queue[goFloor] = 0
-			mutexKey.release()
+			queueKey.release()
 			time.sleep(1)
-
-
-		#mutexKey.acquire()	
-		#print (queue)
-		#mutexKey.release()
 
 
 def set_queue():
@@ -78,9 +61,9 @@ def set_queue():
 		
 		nextFloor = panel.read_buttons()
 		if nextFloor >= 0:
-			mutexKey.acquire()
+			queueKey.acquire()
 			queue[nextFloor]=1
-			mutexKey.release()
+			queueKey.release()
 
 
 
