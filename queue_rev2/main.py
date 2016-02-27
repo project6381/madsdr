@@ -34,11 +34,11 @@ def queue_floor():
 					#print "GOIN DOWN 1"
 				elif (lastFloor < goFloor) and (x < goFloor) and (x > lastFloor):
 					goFloor = x
-					direction = "UP"
+					#direction = "UP"
 					#print "GOIN UP 2"
 				elif (lastFloor > goFloor) and (x > goFloor) and (x < lastFloor):
 					goFloor = x
-					direction = "DOWN"
+					#direction = "DOWN"
 					#print "GOIN DOWN 2"
 			else:
 				mutexKey.acquire()
