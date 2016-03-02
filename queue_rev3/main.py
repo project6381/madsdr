@@ -2,9 +2,11 @@ import panel
 import elevator
 import constants
 import time
+import PanelInterface
 from threading import Thread
 from threading import Lock
 
+panelInt = PanelInterface.PanelInterface()
 
 queueKey = Lock()
 queue = [[0 for y in range(0,3)] for x in range(0,constants.N_FLOORS)]
@@ -16,6 +18,7 @@ def queue_floor():
 	lastFloor = 2
 	direction = "None"
 	while True:
+		time.sleep(0.01)
 		x_max = 0
 		x_min = constants.N_FLOORS-1
 
@@ -65,6 +68,7 @@ def queue_floor():
 
 def set_queue():
 	while True:
+		time.sleep(0.01)
 		(floor,button) = panel.read_buttons()
 		if (floor >= 0) and (button >= 0):
 			with(queueKey):
@@ -74,6 +78,7 @@ def set_queue():
 def go_queue():
 	global goFloor
 	while True:
+		time.sleep(0.01)
 		elevator.go_to_floor(goFloor)
 
 
