@@ -7,11 +7,12 @@ from threading import Lock
 
 
 queueKey = Lock()
-queue = [0 for x in range(0,constants.N_FLOORS)]
+queue = [[0 for y in range(0,3)] for x in range(0,constants.N_FLOORS)]
+goFloor = 2
 
 
 def queue_floor():
-	goFloor = 2
+	global goFloor
 	lastFloor = 2
 	direction = "None"
 	while True:
@@ -19,8 +20,8 @@ def queue_floor():
 		x_min = constants.N_FLOORS-1
 
 		for x in range(0,constants.N_FLOORS):
-			if (x in queue):
-				if queue[x] == 1:
+			for y in range(0,3):
+				if queue[x][y] == 1:
 					x_max = max(x_max,x)
 					x_min = min(x_min,x)
 					if (lastFloor == goFloor) and (direction != "DOWN") and (goFloor < x_max):
@@ -29,9 +30,9 @@ def queue_floor():
 					elif (lastFloor == goFloor) and (direction != "UP") and (goFloor > x_min):
 						goFloor = x
 						direction = "DOWN"
-					elif (lastFloor < goFloor) and (x < goFloor) and (x > lastFloor):
+					elif (lastFloor < goFloor) and (x < goFloor) and (x > lastFloor) and (y!=1):
 						goFloor = x
-					elif (lastFloor > goFloor) and (x > goFloor) and (x < lastFloor):
+					elif (lastFloor > goFloor) and (x > goFloor) and (x < lastFloor) and (y!=0):
 						goFloor = x
 
 		if (direction == "UP") and (x_max <= lastFloor):
@@ -43,36 +44,54 @@ def queue_floor():
 		if checkFloor >= 0:
 			lastFloor = checkFloor 
 
-		elevator.go_to_floor(goFloor)
 		print queue
 		if (lastFloor == goFloor):
-			queueKey.acquire()
-			queue[goFloor] = 0
-			queueKey.release()
-			time.sleep(1)
+			if (direction == "None"):
+				queueKey.acquire()
+				queue[goFloor][0] = 0
+				queue[goFloor][1] = 0
+				queue[goFloor][2] = 0
+				queueKey.release()
+			elif (direction == "UP"):
+				queueKey.acquire()
+				queue[goFloor][0] = 0
+				queue[goFloor][2] = 0
+				queueKey.release()
+				time.sleep(1)
+			elif (direction == "DOWN"):
+				queueKey.acquire()
+				queue[goFloor][1] = 0
+				queue[goFloor][2] = 0
+				queueKey.release()
+				time.sleep(1)
 
 
 def set_queue():
-
 	while True:
-		
-		nextFloor = panel.read_buttons()
-		if nextFloor >= 0:
+		(floor,button) = panel.read_buttons()
+		if (floor >= 0) and (button >= 0):
 			queueKey.acquire()
-			queue[nextFloor]=1
+			queue[floor][button]=1
 			queueKey.release()
 
+def go_queue():
+	global goFloor
+	while True:
+		elevator.go_to_floor(goFloor)
 
 
 def main():
 	thread_1 = Thread(target = queue_floor, args = (),)
 	thread_2 = Thread(target = set_queue, args = (),)
+	thread_3 = Thread(target = go_queue, args = (),)
 
 	thread_1.start()
 	thread_2.start()
+	thread_3.start()
 
 	thread_1.join()
 	thread_2.join()
+	thread_3.join()
 
 
 if __name__ == "__main__":
