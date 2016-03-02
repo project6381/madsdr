@@ -1,12 +1,12 @@
 import ElevInterface
 import PanelInterface
 import constants
+import time
 
 elevator = ElevInterface.ElevInterface()
 panel = PanelInterface.PanelInterface()
 
 def go_to_floor(nextFloor):
-
 	lastFloor = elevator.get_floor_sensor_signal()
 
 	if lastFloor >= 0:
