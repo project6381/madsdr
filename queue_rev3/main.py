@@ -47,22 +47,19 @@ def queue_floor():
 		print queue
 		if (lastFloor == goFloor):
 			if (direction == "None"):
-				queueKey.acquire()
-				queue[goFloor][0] = 0
-				queue[goFloor][1] = 0
-				queue[goFloor][2] = 0
-				queueKey.release()
+				with(queueKey):
+					queue[goFloor][0] = 0
+					queue[goFloor][1] = 0
+					queue[goFloor][2] = 0
 			elif (direction == "UP"):
-				queueKey.acquire()
-				queue[goFloor][0] = 0
-				queue[goFloor][2] = 0
-				queueKey.release()
+				with(queueKey):
+					queue[goFloor][0] = 0
+					queue[goFloor][2] = 0
 				time.sleep(1)
 			elif (direction == "DOWN"):
-				queueKey.acquire()
-				queue[goFloor][1] = 0
-				queue[goFloor][2] = 0
-				queueKey.release()
+				with(queueKey):
+					queue[goFloor][1] = 0
+					queue[goFloor][2] = 0
 				time.sleep(1)
 
 
