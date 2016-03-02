@@ -67,9 +67,9 @@ def set_queue():
 	while True:
 		(floor,button) = panel.read_buttons()
 		if (floor >= 0) and (button >= 0):
-			queueKey.acquire()
-			queue[floor][button]=1
-			queueKey.release()
+			with(queueKey):
+				queue[floor][button]=1
+
 
 def go_queue():
 	global goFloor
