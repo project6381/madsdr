@@ -44,6 +44,10 @@ def queue_floor():
 		elif (direction == "DOWN") and (x_min >= lastFloor):
 			direction = "None"
 
+		checkFloor = elevator.get_floor_sensor_signal()
+		if checkFloor >= 0:
+			lastFloor = checkFloor
+
 		print queue
 		if (lastFloor == goFloor):
 			if (direction == "None"):
@@ -72,7 +76,6 @@ def read_buttons_to_queue():
 					with(queueKey):
 						queue[floor][button]=1
 
-
 def indicators():
 	while True:
 		time.sleep(0.001)
@@ -84,38 +87,26 @@ def indicators():
 							panel.set_button_lamp(button,floor,1)
 						else:
 							panel.set_button_lamp(button,floor,0)
+		
+		if lastFloor == goFloor:
+			panel.set_door_open_lamp(1)
+		else:
+			panel.set_door_open_lamp(0)
 
-def floor_indicator():
-	while True:
-		time.sleep(0.001)
 		panel.set_floor_indicator(lastFloor)
 
-def get_last_floor():
-	global lastFloor
-	while True:
-		time.sleep(0.001)
-		checkFloor = elevator.get_floor_sensor_signal()
-		if checkFloor >= 0:
-			lastFloor = checkFloor
 
 def go_to_floor():
-	if lastFloor >= 0:
-		if lastFloor == goFloor:
-			elevator.set_motor_direction(constants.DIRN_STOP)
-			#print 'you reached your destination'
-			panel.set_door_open_lamp(1)
-			time.sleep(1)
-			#return 0
-		elif lastFloor < goFloor:
-			panel.set_door_open_lamp(0)
-			elevator.set_motor_direction(constants.DIRN_UP)
-			#print 'goin up to %i, last floor is %i' % (nextFloor, lastFloor) 
-		elif lastFloor > goFloor:
-			panel.set_door_open_lamp(0)
-			elevator.set_motor_direction(constants.DIRN_DOWN)
-			#print 'goin down to %i, last floor is %i' % (nextFloor, lastFloor)
-		else:
-			elevator.set_motor_direction(constants.DIRN_UP)
+	while True:
+		time.sleep(0.001)
+		if lastFloor >= 0:
+			if lastFloor == goFloor:
+				elevator.set_motor_direction(constants.DIRN_STOP)
+				time.sleep(1)
+			elif lastFloor < goFloor:
+				elevator.set_motor_direction(constants.DIRN_UP)
+			elif lastFloor > goFloor:
+				elevator.set_motor_direction(constants.DIRN_DOWN)
 
 
 
@@ -124,22 +115,16 @@ def main():
 	thread_1 = Thread(target = queue_floor, args = (),)
 	thread_2 = Thread(target = read_buttons_to_queue, args = (),)
 	thread_3 = Thread(target = indicators, args = (),)
-	thread_4 = Thread(target = floor_indicator, args = (),)
-	thread_5 = Thread(target = get_last_floor, args = (),)
 	thread_6 = Thread(target = go_to_floor, args = (),)
 
 	thread_1.start()
 	thread_2.start()
 	thread_3.start()
-	thread_4.start()
-	thread_5.start()
 	thread_6.start()
 
 	thread_1.join()
 	thread_2.join()
 	thread_3.join()
-	thread_4.join()
-	thread_5.join()
 	thread_6.join()
 
 
