@@ -3,7 +3,7 @@ import io as ioLib
 import channels as channel
 import constants as const
 
-class ElevInterface:
+class ElevatorInterface:
     
 	io = ioLib.ioInterface()
 
