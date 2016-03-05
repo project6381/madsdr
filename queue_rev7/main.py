@@ -3,6 +3,7 @@ from panel import PanelInterface
 from constants import N_FLOORS, DIRN_STOP, DIRN_UP, DIRN_DOWN
 from threading import Thread, Lock
 import time
+import pickle
 
 
 
@@ -14,14 +15,17 @@ class ElevatorDriver:
 		self.__button_queue_key = Lock()
 		self.__floor_queue = [[0 for button in range(0,3)] for floor in range(0,N_FLOORS)]
 		self.__button_queue = []
-		self.__position = (0,0)
+		self.__position = (0,0,"None")
 		self.__thread_run_floor_queue = Thread(target = self.__run_floor_queue, args = (),)
 		self.__thread_build_queues = Thread(target = self.__build_queues, args = (),)
+		self.__thread_save_floor_queue = Thread(target = self.__save_floor_queue, args = (),)
 
 
 	def start(self):
+		self.__load_floor_queue()
 		self.__thread_run_floor_queue.start()
 		self.__thread_build_queues.start()
+		self.__thread_save_floor_queue.start()
 
 
 	def queue_floor_button_run(self,floor,button):
@@ -79,7 +83,7 @@ class ElevatorDriver:
 			if read_floor >= 0:
 				last_floor = read_floor
 
-			self.__position = (last_floor,next_floor)
+			self.__position = (last_floor,next_floor,direction)
 			self.__set_indicator(last_floor,next_floor)
 			self.__go_to_floor(last_floor,next_floor)
 			self.__clear_floor_queue(last_floor,next_floor,direction)
@@ -93,13 +97,36 @@ class ElevatorDriver:
 					if (floor == 0 and button == 1) or (floor == 3 and button == 0):
 						pass
 					elif self.__PanelInterface.get_button_signal(button,floor):
-						if button == 2:
+						if button == 2:	
 							with self.__floor_queue_key:
-								self.__floor_queue[floor][button]=1
+								self.__floor_queue[floor][button]=1			
 						elif (floor,button) not in self.__button_queue:
 							with self.__button_queue_key:
 								self.__button_queue.append((floor,button))
 
+	def __save_floor_queue(self):
+
+		floor_queue = [[0 for button in range(0,3)] for floor in range(0,N_FLOORS)]
+
+		while True:
+			time.sleep(0.001)
+			if self.__floor_queue != floor_queue:
+				with self.__floor_queue_key:
+					queue_file = open("queue_file", "wb")
+					pickle.dump(self.__floor_queue, queue_file)
+					queue_file.close()
+				queue_file = open("queue_file", "rb")
+				floor_queue = pickle.load(queue_file)
+				queue_file.close()
+				print floor_queue
+
+
+
+	def __load_floor_queue(self):
+		queue_file = open("queue_file", "rb")
+		self.__floor_queue = pickle.load(queue_file)
+		queue_file.close()
+			
 
 
 	def __clear_floor_queue(self,last_floor,next_floor,direction):
@@ -121,11 +148,17 @@ class ElevatorDriver:
 
 
 	def __set_indicator(self,last_floor,next_floor):
+		
+		with self.__floor_queue_key:
+			queue_file = open("queue_file", "rb")
+			floor_queue = pickle.load(queue_file)
+			queue_file.close()
+		
 		for floor in range(0,N_FLOORS):
 				for button in range(0,3):
 						if (floor == 0 and button == 1) or (floor == 3 and button == 0):
 							pass
-						elif self.__floor_queue[floor][button] == 1:
+						elif floor_queue[floor][button] == 1:
 							self.__PanelInterface.set_button_lamp(button,floor,1)
 						else:
 							self.__PanelInterface.set_button_lamp(button,floor,0)
@@ -157,7 +190,7 @@ def main():
 		(master_floor, master_button) = elevator_driver.pop_button_queue()
 		if (master_floor != None) and (master_button != None):
 			elevator_driver.queue_floor_button_run(master_floor, master_button)
-		print elevator_driver.read_position()
+		#print elevator_driver.read_position()
 
 
 if __name__ == "__main__":
