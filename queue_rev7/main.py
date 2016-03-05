@@ -91,7 +91,7 @@ class ElevatorDriver:
 								self.__floor_queue[floor][button]=1
 						else:
 							with self.__buttons_to_master_key:
-								self.__buttons_to_master.append(floor,button)
+								self.__buttons_to_master.append((floor,button))
 
 
 
