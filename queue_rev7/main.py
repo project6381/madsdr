@@ -96,7 +96,7 @@ class ElevatorDriver:
 						if button == 2:
 							with self.__floor_queue_key:
 								self.__floor_queue[floor][button]=1
-						else:
+						elif (floor,button) not in self.__button_queue:
 							with self.__button_queue_key:
 								self.__button_queue.append((floor,button))
 
