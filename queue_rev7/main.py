@@ -16,12 +16,12 @@ class ElevatorDriver:
 		self.__button_queue = []
 		self.__position = (0,0)
 		self.__thread_run_floor_queue = Thread(target = self.__run_floor_queue, args = (),)
-		self.__thread_build_queue = Thread(target = self.__build_floor_button_queues, args = (),)
+		self.__thread_build_queues = Thread(target = self.__build_queues, args = (),)
 
 
 	def start(self):
 		self.__thread_run_floor_queue.start()
-		self.__thread_build_queue.start()
+		self.__thread_build_queues.start()
 
 
 	def queue_floor_button_run(self,floor,button):
@@ -85,7 +85,7 @@ class ElevatorDriver:
 			self.__clear_floor_queue(last_floor,next_floor,direction)
 
 
-	def __build_floor_button_queues(self):
+	def __build_queues(self):
 		while True:
 			time.sleep(0.001)
 			for floor in range (0,N_FLOORS):
