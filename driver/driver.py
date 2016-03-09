@@ -167,8 +167,6 @@ class Driver:
 				saved_elevator_queue = pickle.load(queue_file)
 				queue_file.close()
 
-				#print saved_elevator_queue
-
 				for floor in range(0,N_FLOORS):
 						for button in range(0,3):
 								if (floor == 0 and button == 1) or (floor == 3 and button == 0):
