@@ -18,17 +18,10 @@ class Driver:
 		self.__thread_run_elevator = Thread(target = self.__run_elevator, args = (),)
 		self.__thread_build_queues = Thread(target = self.__build_queues, args = (),)
 		self.__thread_set_indicators = Thread(target = self.__set_indicators, args = (),)
+		self.__start()
 
 
-	def start(self):
-		self.__startup()
-		self.__load_elevator_queue()
-		self.__thread_run_elevator.start()
-		self.__thread_build_queues.start()
-		self.__thread_set_indicators.start()
-
-
-	def queue_elevator(self,floor,button):
+	def queue_elevator_run(self,floor,button):
 		with self.__elevator_queue_key:
 			self.__elevator_queue[floor][button]=1
 
@@ -43,6 +36,14 @@ class Driver:
 
 	def read_position(self):
 		return self.__position
+
+
+	def __start(self):
+		self.__startup()
+		self.__load_elevator_queue()
+		self.__thread_run_elevator.start()
+		self.__thread_build_queues.start()
+		self.__thread_set_indicators.start()
 
 
 	def __startup(self):

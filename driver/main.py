@@ -2,7 +2,6 @@ from driver import Driver
 
 def main():
 	__Driver = Driver()
-	__Driver.start()
 	while True:
 
 		(master_floor, master_button) = __Driver.pop_floor_panel_queue()
