@@ -54,10 +54,10 @@ class Driver:
 
 		while check_floor < 0:
 			if turn_time > time.time():
-				self.__ElevatorInterface.set_motor_direction(DIRN_UP)
+				self.__ElevatorInterface.set_motor_direction(DIRN_DOWN)
 				pass
 			else:
-				self.__ElevatorInterface.set_motor_direction(DIRN_DOWN)
+				self.__ElevatorInterface.set_motor_direction(DIRN_UP)
 				if reset_time < time.time():
 					turn_time = time.time() + 5
 					reset_time = time.time() + 10
@@ -67,45 +67,66 @@ class Driver:
 
 
 	def __load_elevator_queue(self):
-		queue_file = open("queue_file", "rb")
-		self.__elevator_queue = pickle.load(queue_file)
-		queue_file.close()
+		try:
+			queue_file = open("queue_file_1", "rb")
+			self.__elevator_queue = pickle.load(queue_file)
+			queue_file.close()
+		except:
+			try:
+				queue_file = open("queue_file_2", "rb")
+				self.__elevator_queue = pickle.load(queue_file)
+				queue_file.close()
+			except:
+				pass
 
 
 	def __run_elevator(self):
 
 		last_floor = 0
 		next_floor = 0
+		next_button = 0
 		direction = "None"
 
 		while True:
-			time.sleep(0.001)
+			time.sleep(0.01)
 
 			floor_max = 0
 			floor_min = N_FLOORS-1
 
-			for floor in range(0,N_FLOORS):
-				for button in range(0,3):
-					if self.__elevator_queue[floor][button] == 1:
-						floor_max = max(floor_max,floor)
-						floor_min = min(floor_min,floor)
-						if (last_floor == next_floor) and (direction != "DOWN") and (next_floor < floor_max):
-							next_floor = floor
-						elif (last_floor == next_floor) and (direction != "UP") and (next_floor > floor_min):
-							next_floor = floor
-						elif (last_floor < next_floor) and (floor < next_floor) and (floor > last_floor) and (button != 1):
-							next_floor = floor
-						elif (last_floor > next_floor) and (floor > next_floor) and (floor < last_floor) and (button != 0):
-							next_floor = floor
+			with self.__elevator_queue_key:
+				for floor in range(0,N_FLOORS):
+					for button in range(0,3):
+							if self.__elevator_queue[floor][button] == 1:
+								floor_max = max(floor_max,floor)
+								floor_min = min(floor_min,floor)
+								if (last_floor == next_floor) and (direction != "DOWN") and (next_floor <= floor_max):
+									next_floor = floor
+									next_button = button
+								elif (last_floor == next_floor) and (direction != "UP") and (next_floor >= floor_min):
+									next_floor = floor
+									next_button = button
+								elif (last_floor > next_floor) and (floor > next_floor) and (floor < last_floor) and (button != 0):
+									next_floor = floor
+									next_button = button
+								elif (last_floor < next_floor) and (floor < next_floor) and (floor > last_floor) and (button != 1):
+									next_floor = floor
+									next_button = button
+			
+			if (direction == "DOWN") and (floor_min < N_FLOORS-1) and (next_button == 0):
+				next_floor = floor_min
+			elif (direction == "UP") and (floor_max > 0) and (next_button == 1):
+				next_floor = floor_max
+
+			read_floor = self.__ElevatorInterface.get_floor_sensor_signal()
+			if read_floor >= 0:
+				last_floor = read_floor
 
 			if (direction == "UP") and (floor_max <= last_floor):
 				direction = "None"
 			elif (direction == "DOWN") and (floor_min >= last_floor):
 				direction = "None"
 
-			read_floor = self.__ElevatorInterface.get_floor_sensor_signal()
-			if read_floor >= 0:
-				last_floor = read_floor
+			#print floor_max, floor_min
 
 			if last_floor == next_floor:
 				self.__ElevatorInterface.set_motor_direction(DIRN_STOP)
@@ -136,7 +157,7 @@ class Driver:
 
 	def __build_queues(self):
 		while True:
-			time.sleep(0.001)
+			time.sleep(0.01)
 			for floor in range (0,N_FLOORS):
 				for button in range(0,3):
 					if (floor == 0 and button == 1) or (floor == 3 and button == 0):
@@ -144,7 +165,7 @@ class Driver:
 					elif self.__PanelInterface.get_button_signal(button,floor):
 						if button == 2:	
 							with self.__elevator_queue_key:
-								self.__elevator_queue[floor][button]=1			
+								self.__elevator_queue[floor][button]=1
 						elif (floor,button) not in self.__floor_panel_queue:
 							with self.__floor_panel_queue_key:
 								self.__floor_panel_queue.append((floor,button))
@@ -155,27 +176,37 @@ class Driver:
 		saved_elevator_queue = [[0 for button in range(0,3)] for floor in range(0,N_FLOORS)]
 
 		while True:
-			time.sleep(0.001)
+			time.sleep(0.01)
 			
-			if self.__elevator_queue != saved_elevator_queue:
-
-				with self.__elevator_queue_key:
-					queue_file = open("queue_file", "wb")
+			with self.__elevator_queue_key:
+				if self.__elevator_queue != saved_elevator_queue:
+					queue_file = open("queue_file_1", "wb")
 					pickle.dump(self.__elevator_queue, queue_file)
 					queue_file.close()
 
-				queue_file = open("queue_file", "rb")
-				saved_elevator_queue = pickle.load(queue_file)
-				queue_file.close()
+					queue_file = open("queue_file_2", "wb")
+					pickle.dump(self.__elevator_queue, queue_file)
+					queue_file.close()
 
-				for floor in range(0,N_FLOORS):
-						for button in range(0,3):
-								if (floor == 0 and button == 1) or (floor == 3 and button == 0):
-									pass
-								elif saved_elevator_queue[floor][button] == 1:
-									self.__PanelInterface.set_button_lamp(button,floor,1)
-								else:
-									self.__PanelInterface.set_button_lamp(button,floor,0)
+					try:
+						queue_file = open("queue_file_1", "rb")
+						saved_elevator_queue = pickle.load(queue_file)
+						queue_file.close()
+						if saved_elevator_queue != self.__elevator_queue:
+							raise
+					except:
+						queue_file = open("queue_file_2", "rb")
+						saved_elevator_queue = pickle.load(queue_file)
+						queue_file.close()
+
+					for floor in range(0,N_FLOORS):
+							for button in range(0,3):
+									if (floor == 0 and button == 1) or (floor == 3 and button == 0):
+										pass
+									elif saved_elevator_queue[floor][button] == 1:
+										self.__PanelInterface.set_button_lamp(button,floor,1)
+									else:
+										self.__PanelInterface.set_button_lamp(button,floor,0)
 			
 			(last_floor, next_floor, direction) = self.__position
 			
