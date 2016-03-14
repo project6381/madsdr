@@ -4,6 +4,7 @@ from constants import N_FLOORS, DIRN_STOP, DIRN_UP, DIRN_DOWN
 from threading import Thread, Lock
 import time
 import pickle
+import sys
 
 
 class Driver:
@@ -15,6 +16,7 @@ class Driver:
 		self.__elevator_queue = [[0 for button in range(0,3)] for floor in range(0,N_FLOORS)]
 		self.__floor_panel_queue = []
 		self.__position = (0,0,"None")
+		self.__stop = False
 		self.__thread_run_elevator = Thread(target = self.__run_elevator, args = (),)
 		self.__thread_build_queues = Thread(target = self.__build_queues, args = (),)
 		self.__thread_set_indicators = Thread(target = self.__set_indicators, args = (),)
@@ -37,14 +39,18 @@ class Driver:
 	def read_position(self):
 		return self.__position
 
+	def stop(self):
+		self.__stop = True
 
 	def __start(self):
 		self.__startup()
 		self.__load_elevator_queue()
+		self.__thread_run_elevator.daemon = True
 		self.__thread_run_elevator.start()
+		self.__thread_build_queues.daemon = True
 		self.__thread_build_queues.start()
+		self.__thread_set_indicators.daemon = True
 		self.__thread_set_indicators.start()
-
 
 	def __startup(self):
 		
@@ -87,7 +93,7 @@ class Driver:
 		next_button = 0
 		direction = "None"
 
-		while True:
+		while (self.__stop != True):
 			time.sleep(0.01)
 
 			floor_max = 0
@@ -154,7 +160,7 @@ class Driver:
 			
 
 	def __build_queues(self):
-		while True:
+		while (self.__stop != True):
 			time.sleep(0.01)
 			for floor in range (0,N_FLOORS):
 				for button in range(0,3):
@@ -173,7 +179,7 @@ class Driver:
 
 		saved_elevator_queue = [[0 for button in range(0,3)] for floor in range(0,N_FLOORS)]
 
-		while True:
+		while (self.__stop != True):
 			time.sleep(0.01)
 			
 			with self.__elevator_queue_key:
@@ -196,6 +202,7 @@ class Driver:
 						queue_file = open("queue_file_2", "rb")
 						saved_elevator_queue = pickle.load(queue_file)
 						queue_file.close()
+
 
 					for floor in range(0,N_FLOORS):
 							for button in range(0,3):
