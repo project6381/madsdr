@@ -165,7 +165,6 @@ class Driver:
 					self.__elevator_interface.set_motor_direction(DIRN_DOWN)
 					direction = DIRN_DOWN
 					self.__position = (last_floor,next_floor,direction)
-				raise StandardError, "fail"
 		except StandardError as error:
 			print error
 			thread.interrupt_main()
