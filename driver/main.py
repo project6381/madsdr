@@ -17,7 +17,6 @@ def main():
 		pass
 	except StandardError as error:
 		print error
-		print "standard error"
 	finally:
 		print "exiting main"
 		
