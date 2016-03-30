@@ -2,10 +2,9 @@ from elevator_interface import ElevatorInterface
 from panel_interface import PanelInterface
 from constants import N_FLOORS, DIRN_STOP, DIRN_UP, DIRN_DOWN, BUTTON_CALL_UP, BUTTON_CALL_DOWN
 from threading import Thread, Lock
-import thread
+from thread import interrupt_main
 import time
 import pickle
-import sys
 
 
 class Driver:
@@ -53,7 +52,8 @@ class Driver:
 			self.__thread_set_indicators.start()
 		except StandardError as error:
 			print error
-			thread.interrupt_main()
+			print "Driver.__start"
+			interrupt_main()
 
 	def __startup(self):
 		try:
@@ -76,7 +76,8 @@ class Driver:
 
 		except StandardError as error:
 			print error
-			thread.interrupt_main()
+			print "Driver.__startup"
+			interrupt_main()
 
 
 	def __load_elevator_queue(self):
@@ -85,12 +86,13 @@ class Driver:
 				self.__elevator_queue = pickle.load(queue_file)
 		except StandardError as error:
 			print error
+			print "Driver.__load_elevator_queue"
 			try:
 				with open("queue_file_2", "rb") as queue_file:
 					self.__elevator_queue = pickle.load(queue_file)
 			except StandardError as error:
 				print error
-				print "elevator_queue cleared"
+				print "Driver.__load_elevator_queue"
 
 
 	def __run_elevator(self):
@@ -165,9 +167,11 @@ class Driver:
 					self.__elevator_interface.set_motor_direction(DIRN_DOWN)
 					direction = DIRN_DOWN
 					self.__position = (last_floor,next_floor,direction)
+
 		except StandardError as error:
 			print error
-			thread.interrupt_main()
+			print "Driver.__run_elevator"
+			interrupt_main()
 			
 
 	def __build_queues(self):
@@ -189,7 +193,8 @@ class Driver:
 
 		except StandardError as error:
 			print error
-			thread.interrupt_main()
+			print "Driver.__build_queues"
+			interrupt_main()
 
 
 	def __set_indicators(self):
@@ -202,7 +207,7 @@ class Driver:
 				
 				with self.__elevator_queue_key:
 					if self.__elevator_queue != saved_elevator_queue:
-						with open("queue_file_1", "wb")as queue_file:
+						with open("queue_file_1", "wb") as queue_file:
 							pickle.dump(self.__elevator_queue, queue_file)
 
 						with open("queue_file_2", "wb") as queue_file: 
@@ -211,11 +216,12 @@ class Driver:
 						try:
 							with open("queue_file_1", "rb") as queue_file:
 								saved_elevator_queue = pickle.load(queue_file)
-							assert saved_elevator_queue == self.__elevator_queue, "error loading queue_file_1"
+							assert saved_elevator_queue == self.__elevator_queue, "unknown error loading queue_file_1"
 						except StandardError as error:
 							print error
 							with open("queue_file_2", "rb") as queue_file: 
 								saved_elevator_queue = pickle.load(queue_file)
+							assert saved_elevator_queue == self.__elevator_queue, "unknown error loading queue_file_2"
 
 						for floor in range(0,N_FLOORS):
 								for button in range(0,3):
@@ -237,5 +243,6 @@ class Driver:
 
 		except StandardError as error:
 			print error
-			thread.interrupt_main()
+			print "Driver.__set_indicators"
+			interrupt_main()
 
