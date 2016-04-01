@@ -1,4 +1,4 @@
-from driver import Driver
+from slave_driver import SlaveDriver
 import time
 import subprocess
 import sys
@@ -6,7 +6,7 @@ import sys
 def main():
 	try:
 		#time.sleep(3)
-		driver = Driver()
+		driver = SlaveDriver()
 		while True:
 			(master_floor, master_button) = driver.pop_floor_panel_queue()
 			if (master_floor != None) and (master_button != None):

@@ -8,7 +8,7 @@ import pickle
 import watchdogs
 
 
-class Driver:
+class SlaveDriver:
 	def __init__(self):
 		self.__elevator_interface = ElevatorInterface()
 		self.__panel_interface = PanelInterface()
@@ -56,11 +56,11 @@ class Driver:
 				self.__thread_set_indicators.start()
 		except watchdogs.WatchdogTimer:
 			print "watchdog error"
-			print "Driver.__start"
+			print "SlaveDriver.__start"
 			interrupt_main()
 		except StandardError as error:
 			print error
-			print "Driver.__start"
+			print "SlaveDriver.__start"
 			interrupt_main()
 			
 
@@ -85,7 +85,7 @@ class Driver:
 
 		except StandardError as error:
 			print error
-			print "Driver.__startup"
+			print "SlaveDriver.__startup"
 			interrupt_main()
 
 
@@ -95,18 +95,18 @@ class Driver:
 				self.__elevator_queue = pickle.load(queue_file)
 		except StandardError as error:
 			print error
-			print "Driver.__load_elevator_queue"
+			print "SlaveDriver.__load_elevator_queue"
 			try:
 				with open("queue_file_2", "rb") as queue_file:
 					self.__elevator_queue = pickle.load(queue_file)
 			except StandardError as error:
 				print error
-				print "Driver.__load_elevator_queue"
+				print "SlaveDriver.__load_elevator_queue"
 
 
 	def __run_elevator(self):
 		try:
-			__run_elevator_watchdog = watchdogs.ThreadWatchdog(2,"watchdog event: Driver.__run_elevator")
+			__run_elevator_watchdog = watchdogs.ThreadWatchdog(2,"watchdog event: SlaveDriver.__run_elevator")
 			__run_elevator_watchdog.StartWatchdog()
 
 			last_floor = 0
@@ -182,13 +182,13 @@ class Driver:
 
 		except StandardError as error:
 			print error
-			print "Driver.__run_elevator"
+			print "SlaveDriver.__run_elevator"
 			interrupt_main()
 			
 
 	def __build_queues(self):
 		try:
-			__build_queues_watchdog = watchdogs.ThreadWatchdog(1,"watchdog event: Driver.__build_queues")
+			__build_queues_watchdog = watchdogs.ThreadWatchdog(1,"watchdog event: SlaveDriver.__build_queues")
 			__build_queues_watchdog.StartWatchdog()
 
 			while True:
@@ -209,13 +209,13 @@ class Driver:
 
 		except StandardError as error:
 			print error
-			print "Driver.__build_queues"
+			print "SlaveDriver.__build_queues"
 			interrupt_main()
 
 
 	def __set_indicators(self):
 		try:
-			__set_indicators_watchdog = watchdogs.ThreadWatchdog(1,"watchdog event: Driver.__set_indicators_watchdog")
+			__set_indicators_watchdog = watchdogs.ThreadWatchdog(1,"watchdog event: SlaveDriver.__set_indicators_watchdog")
 			__set_indicators_watchdog.StartWatchdog()
 
 			saved_elevator_queue = [[0 for button in range(0,3)] for floor in range(0,N_FLOORS)]
@@ -262,6 +262,6 @@ class Driver:
 
 		except StandardError as error:
 			print error
-			print "Driver.__set_indicators"
+			print "SlaveDriver.__set_indicators"
 			interrupt_main()
 
