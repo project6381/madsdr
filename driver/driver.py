@@ -31,7 +31,6 @@ class Driver:
 
 	def pop_floor_panel_queue(self):
 		with watchdogs.WatchdogTimer(1):
-			time.sleep(2)
 			with self.__floor_panel_queue_key:
 				if self.__floor_panel_queue:
 					return self.__floor_panel_queue.pop(0)
