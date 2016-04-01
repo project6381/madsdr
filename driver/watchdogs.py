@@ -6,7 +6,7 @@ import signal
 #Kilde for klasse WatchdogTimer: https://dzone.com/articles/simple-python-watchdog-timer
 class WatchdogTimer(Exception):
 
-    def __init__(self, time=5):
+    def __init__(self, time):
         self.time = time
 
     def __enter__(self):
