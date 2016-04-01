@@ -17,7 +17,6 @@ class Driver:
 		self.__elevator_queue = [[0 for button in range(0,3)] for floor in range(0,N_FLOORS)]
 		self.__floor_panel_queue = []
 		self.__position = (0,0,DIRN_STOP)
-		self.__stop = False
 		self.__thread_run_elevator = Thread(target = self.__run_elevator, args = (),)
 		self.__thread_build_queues = Thread(target = self.__build_queues, args = (),)
 		self.__thread_set_indicators = Thread(target = self.__set_indicators, args = (),)
@@ -25,20 +24,24 @@ class Driver:
 
 
 	def queue_elevator_run(self,floor,button):
-		with self.__elevator_queue_key:
-			self.__elevator_queue[floor][button]=1
+		with watchdogs.WatchdogTimer(1):
+			with self.__elevator_queue_key:
+				self.__elevator_queue[floor][button]=1
 
 
 	def pop_floor_panel_queue(self):
-		with self.__floor_panel_queue_key:
-			if self.__floor_panel_queue:
-				return self.__floor_panel_queue.pop(0)
-			else:
-				return (None, None)
+		with watchdogs.WatchdogTimer(1):
+			time.sleep(2)
+			with self.__floor_panel_queue_key:
+				if self.__floor_panel_queue:
+					return self.__floor_panel_queue.pop(0)
+				else:
+					return (None, None)
 
 
 	def read_position(self):
-		return self.__position
+		with watchdogs.WatchdogTimer(1):
+			return self.__position
 
 
 	def __start(self):
@@ -190,7 +193,7 @@ class Driver:
 			__build_queues_watchdog.StartWatchdog()
 
 			while True:
-				time.sleep(1)
+				time.sleep(0.01)
 				__build_queues_watchdog.PetWatchdog()
 
 				for floor in range (0,N_FLOORS):
