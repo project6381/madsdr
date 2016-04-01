@@ -5,6 +5,7 @@ from threading import Thread, Lock
 from thread import interrupt_main
 import time
 import pickle
+import watchdogs
 
 
 class Driver:
@@ -42,18 +43,24 @@ class Driver:
 
 	def __start(self):
 		try:
-			self.__startup()
-			self.__load_elevator_queue()
-			self.__thread_run_elevator.daemon = True
-			self.__thread_run_elevator.start()
-			self.__thread_build_queues.daemon = True
-			self.__thread_build_queues.start()
-			self.__thread_set_indicators.daemon = True
-			self.__thread_set_indicators.start()
+			with watchdogs.WatchdogTimer(10):
+				self.__startup()
+				self.__load_elevator_queue()
+				self.__thread_run_elevator.daemon = True
+				self.__thread_run_elevator.start()
+				self.__thread_build_queues.daemon = True
+				self.__thread_build_queues.start()
+				self.__thread_set_indicators.daemon = True
+				self.__thread_set_indicators.start()
+		except watchdogs.WatchdogTimer:
+			print "watchdog error"
+			print "Driver.__start"
+			interrupt_main()
 		except StandardError as error:
 			print error
 			print "Driver.__start"
 			interrupt_main()
+			
 
 	def __startup(self):
 		try:
@@ -97,6 +104,8 @@ class Driver:
 
 	def __run_elevator(self):
 		try:
+			__run_elevator_watchdog = watchdogs.ThreadWatchdog(2,"watchdog event: Driver.__run_elevator")
+			__run_elevator_watchdog.StartWatchdog()
 
 			last_floor = 0
 			next_floor = 0
@@ -105,6 +114,7 @@ class Driver:
 
 			while True:
 				time.sleep(0.01)
+				__run_elevator_watchdog.PetWatchdog()
 
 				floor_max = 0
 				floor_min = N_FLOORS-1
@@ -176,9 +186,13 @@ class Driver:
 
 	def __build_queues(self):
 		try:
+			__build_queues_watchdog = watchdogs.ThreadWatchdog(1,"watchdog event: Driver.__build_queues")
+			__build_queues_watchdog.StartWatchdog()
 
 			while True:
-				time.sleep(0.01)
+				time.sleep(1)
+				__build_queues_watchdog.PetWatchdog()
+
 				for floor in range (0,N_FLOORS):
 					for button in range(0,3):
 						if (floor == 0 and button == 1) or (floor == 3 and button == 0):
@@ -199,11 +213,14 @@ class Driver:
 
 	def __set_indicators(self):
 		try:
+			__set_indicators_watchdog = watchdogs.ThreadWatchdog(1,"watchdog event: Driver.__set_indicators_watchdog")
+			__set_indicators_watchdog.StartWatchdog()
 
 			saved_elevator_queue = [[0 for button in range(0,3)] for floor in range(0,N_FLOORS)]
 
 			while True:
 				time.sleep(0.01)
+				__set_indicators_watchdog.PetWatchdog()
 				
 				with self.__elevator_queue_key:
 					if self.__elevator_queue != saved_elevator_queue:
