@@ -20,7 +20,13 @@ def main():
 			if (elevator_positions[elevator][0] > elevator_positions[elevator][1]) and (elevator_positions[elevator][2]==2):
 				elevator_positions[elevator][2]=0
 			if (elevator_positions[elevator][0] < elevator_positions[elevator][1]) and (elevator_positions[elevator][2]==0):
-				elevator_positions[elevator][2]=0
+				elevator_positions[elevator][2]=2
+			if elevator_positions[elevator][2] == 1:
+				elevator_positions[elevator][0]=elevator_positions[elevator][1]
+			if (elevator_positions[elevator][0] == 0) and (elevator_positions[elevator][2] == 0):
+				elevator_positions[elevator][2] == 1
+			if (elevator_positions[elevator][0] == 3) and (elevator_positions[elevator][2] == 2):
+				elevator_positions[elevator][2] == 1
 
 
 		for order in range(0,8):
@@ -28,12 +34,7 @@ def main():
 			button_orders[3]=0
 			button_orders[4]=0
 
-		driver.set_order(button_orders)
-		driver.set_position(elevator_positions)
-
-		time.sleep(0.1)
-
-		elevator_orders = driver.read_orders()
+		elevator_orders = driver.order_elevator(button_orders, elevator_positions)
 
 		print "elevator_positions:"
 		print elevator_positions
