@@ -54,9 +54,9 @@ class MasterDriver:
 					if (self.__elevator_positions[elevator][LAST_FLOOR] == floor-N_FLOORS) and (self.__elevator_positions[elevator][NEXT_FLOOR] == floor-N_FLOORS) and ((self.__elevator_positions[elevator][DIRECTION] == DIRN_STOP) or (self.__elevator_positions[elevator][DIRECTION] == DIRN_DOWN)):
 						elevator_priority[elevator] = 19
 					elif (floor-N_FLOORS > N_FLOORS) and (self.__elevator_positions[elevator][LAST_FLOOR] > floor-N_FLOORS) and (self.__elevator_positions[elevator][DIRECTION] == DIRN_DOWN):
-						elevator_priority[elevator] = 15 + (1 - abs(self.__elevator_positions[elevator][LAST_FLOOR]-floor-N_FLOORS))	
+						elevator_priority[elevator] = 15 + (3 - abs(self.__elevator_positions[elevator][LAST_FLOOR]-floor-N_FLOORS))	
 					elif (self.__elevator_positions[elevator][DIRECTION] == DIRN_STOP):
-						elevator_priority[elevator] = 11 + (1 - abs(self.__elevator_positions[elevator][LAST_FLOOR]-floor-N_FLOORS))	
+						elevator_priority[elevator] = 11 + (3 - abs(self.__elevator_positions[elevator][LAST_FLOOR]-floor-N_FLOORS))	
 					else:
 						elevator_priority[elevator] = 1 + randint(0,9)
 
