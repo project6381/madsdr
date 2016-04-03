@@ -10,10 +10,11 @@ def main():
 	button_orders = [0,0,0,0,0,0,0,0]
 	elevator_positions = [[0,0,0],[0,0,0],[0,0,0]]
 	elevator_orders = [0,0,0,0,0,0,0,0]
-	#elevator_orders = []
+	elevator_online = [0,0,0]
 	while True:
 		
 		for elevator in range(0,3):
+			elevator_online[elevator]=randint(0,1)
 			elevator_positions[elevator][0]=randint(0,3)
 			elevator_positions[elevator][1]=randint(0,3)
 			elevator_positions[elevator][2]=randint(0,2)
@@ -34,8 +35,10 @@ def main():
 			button_orders[3]=0
 			button_orders[4]=0
 
-		elevator_orders = driver.order_elevator(button_orders, elevator_positions)
+		elevator_orders = driver.order_elevator(button_orders, elevator_positions, elevator_online)
 
+		print "elevator_online"
+		print elevator_online
 		print "elevator_positions:"
 		print elevator_positions
 		print "button_orders:"
