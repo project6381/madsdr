@@ -1,6 +1,6 @@
 from elevator_interface import ElevatorInterface
 from panel_interface import PanelInterface
-from constants import N_FLOORS, DIRN_STOP, DIRN_UP, DIRN_DOWN, BUTTON_CALL_UP, BUTTON_CALL_DOWN
+from constants import N_FLOORS, DIRN_STOP, DIRN_UP, DIRN_DOWN, BUTTON_CALL_UP, BUTTON_CALL_DOWN, BUTTON_COMMAND, MY_ID
 from threading import Thread, Lock
 from thread import interrupt_main
 import time
@@ -175,7 +175,7 @@ class SlaveDriver:
 			while True:
 				time.sleep(0.01)
 				__run_elevator_watchdog.PetWatchdog()
-
+				#print self.__elevator_queue
 				floor_max = 0
 				floor_min = N_FLOORS-1
 
@@ -249,6 +249,8 @@ class SlaveDriver:
 			__build_queues_watchdog = watchdogs.ThreadWatchdog(1,"watchdog event: SlaveDriver.__build_queues")
 			__build_queues_watchdog.StartWatchdog()
 
+			internal_queue = [0 for floor in range (0,N_FLOORS)]
+
 			while True:
 				time.sleep(0.01)
 				__build_queues_watchdog.PetWatchdog()
@@ -283,7 +285,7 @@ class SlaveDriver:
 							with self.__elevator_queue_key:
 								self.__elevator_queue[floor][button]=1
 
-					if self.__elevator_queue[floor][BUTTON_COMMAND] = 0:
+					if self.__elevator_queue[floor][BUTTON_COMMAND] == 0:
 						internal_queue[floor] = 0
 
 

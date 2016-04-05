@@ -10,19 +10,33 @@ from random import randint
 def main():
 	master_queue = [0 for floor in range(0,N_FLOORS*2)]
 	try:
-		#time.sleep(3)
+		time.sleep(0.01)
 		driver = SlaveDriver()
 		while True:
 			(master_floor, master_button) = driver.pop_floor_panel_queue()
+			#master_floor = None
+			#master_button = None
 			if (master_floor != None) and (master_button != None):
-				if master_button = 0:
+				if (master_button == 0) and (master_queue[master_floor] == 0):
 					master_queue[master_floor] = randint(1,3)
-				if master_button = 1:
-					master_queue[master_floor] = randint(1,3)
-				driver.master_queue_elevator_run(master_queue)
+				if (master_button == 1) and (master_queue[master_floor+N_FLOORS] == 0):
+					master_queue[master_floor+N_FLOORS] = randint(1,3)
+			driver.master_queue_elevator_run(master_queue)
+			#else:
+			#for floor in range(0,N_FLOORS*2):
+
 
 			print driver.read_saved_master_queue()
-			#print driver.read_position()
+			(last_floor, next_floor, direction) = driver.read_position()
+			if last_floor == next_floor:
+				if direction == 0:
+					master_queue[next_floor+N_FLOORS]=0
+				elif direction == 2:
+					master_queue[next_floor]=0
+				else:
+					master_queue[next_floor+N_FLOORS]=0
+					master_queue[next_floor]=0
+
 
 	except KeyboardInterrupt:
 		pass

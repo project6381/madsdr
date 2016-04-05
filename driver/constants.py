@@ -13,6 +13,9 @@ BUTTON_COMMAND = 2
 # Number of floors. Hardware-dependent, do not modify.
 N_FLOORS = 4
 
+# Elevator ID
+MY_ID = 1
+
 # Number of buttons (and corresponding lamps) on a per-floor basis
 N_BUTTONS = 3
 
