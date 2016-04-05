@@ -19,8 +19,10 @@ def main():
 			if (master_floor != None) and (master_button != None):
 				if (master_button == 0) and (master_queue[master_floor] == 0):
 					master_queue[master_floor] = randint(1,3)
+					#master_queue[master_floor] = 1
 				if (master_button == 1) and (master_queue[master_floor+N_FLOORS] == 0):
 					master_queue[master_floor+N_FLOORS] = randint(1,3)
+					#master_queue[master_floor+N_FLOORS] = 1
 			driver.master_queue_elevator_run(master_queue)
 			#else:
 			#for floor in range(0,N_FLOORS*2):
