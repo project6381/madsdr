@@ -17,6 +17,7 @@ class SlaveDriver:
 		self.__internal_queue_key = Lock()
 		self.__floor_panel_queue_key = Lock()
 		self.__elevator_queue = [[0 for button in range(0,3)] for floor in range(0,N_FLOORS)]
+		self.__master_queue = [0 for floor in range (0,N_FLOORS*2)]
 		self.__saved_master_queue = [0 for floor in range (0,N_FLOORS*2)]
 		self.__saved_internal_queue = [0 for floor in range (0,N_FLOORS)]
 		self.__floor_panel_queue = []
@@ -29,35 +30,7 @@ class SlaveDriver:
 
 	def master_queue_elevator_run(self,master_queue):
 		with watchdogs.WatchdogTimer(1):
-			with self.__master_queue_key:
-				if master_queue != self.__saved_master_queue:
-					with open("master_file_1", "wb") as master_file:
-						pickle.dump(master_queue, master_file)
-
-					with open("master_file_2", "wb") as master_file: 
-						pickle.dump(master_queue, master_file)
-
-					try:
-						with open("master_file_1", "rb") as master_file:
-							self.__saved_master_queue = pickle.load(master_file)
-						assert master_queue == self.__saved_master_queue, "unknown error loading master_file_1"
-					except StandardError as error:
-						print error
-						with open("master_file_2", "rb") as master_file: 
-							self.__saved_master_queue = pickle.load(master_file)
-						assert master_queue == self.__saved_master_queue, "unknown error loading master_file_2"
-
-					with self.__elevator_queue_key:
-						for floor in range(0,N_FLOORS):
-							if self.__saved_master_queue[floor] == MY_ID:
-								self.__elevator_queue[floor][BUTTON_CALL_UP]=1
-							else:
-								self.__elevator_queue[floor][BUTTON_CALL_UP]=0
-						for floor in range(N_FLOORS,N_FLOORS*2):
-							if self.__saved_master_queue[floor] == MY_ID:
-								self.__elevator_queue[floor-N_FLOORS][BUTTON_CALL_DOWN]=1
-							else:
-								self.__elevator_queue[floor-N_FLOORS][BUTTON_CALL_DOWN]=0
+			
 
 	def read_saved_master_queue(self):
 		with self.__master_queue_key:
@@ -79,24 +52,25 @@ class SlaveDriver:
 
 
 	def __start(self):
-		try:
-			with watchdogs.WatchdogTimer(10):
-				self.__startup()
-				self.__load_elevator_queue()
-				self.__thread_run_elevator.daemon = True
-				self.__thread_run_elevator.start()
-				self.__thread_build_queues.daemon = True
-				self.__thread_build_queues.start()
-				self.__thread_set_indicators.daemon = True
-				self.__thread_set_indicators.start()
-		except watchdogs.WatchdogTimer:
-			print "watchdog error"
-			print "SlaveDriver.__start"
-			interrupt_main()
-		except StandardError as error:
-			print error
-			print "SlaveDriver.__start"
-			interrupt_main()
+		with self.__master_queue_key:
+			try:
+				with watchdogs.WatchdogTimer(10):
+					self.__startup()
+					self.__load_elevator_queue()
+					self.__thread_run_elevator.daemon = True
+					self.__thread_run_elevator.start()
+					self.__thread_build_queues.daemon = True
+					self.__thread_build_queues.start()
+					self.__thread_set_indicators.daemon = True
+					self.__thread_set_indicators.start()
+			except watchdogs.WatchdogTimer:
+				print "watchdog error"
+				print "SlaveDriver.__start"
+				interrupt_main()
+			except StandardError as error:
+				print error
+				print "SlaveDriver.__start"
+				interrupt_main()
 			
 
 	def __startup(self):
@@ -292,7 +266,37 @@ class SlaveDriver:
 						with self.__elevator_queue_key:
 							if self.__elevator_queue[floor][BUTTON_COMMAND] == 0:
 								internal_queue[floor] = 0
-				print self.__elevator_queue
+								
+			with self.__master_queue_key:
+				if self.__master_queue != self.__saved_master_queue:
+					with open("master_file_1", "wb") as master_file:
+						pickle.dump(self.__master_queue, master_file)
+
+					with open("master_file_2", "wb") as master_file: 
+						pickle.dump(self.__master_queue, master_file)
+
+					try:
+						with open("master_file_1", "rb") as master_file:
+							self.__saved_master_queue = pickle.load(master_file)
+						assert self.__master_queue == self.__saved_master_queue, "unknown error loading master_file_1"
+					except StandardError as error:
+						print error
+						with open("master_file_2", "rb") as master_file: 
+							self.__saved_master_queue = pickle.load(master_file)
+						assert self.__master_queue == self.__saved_master_queue, "unknown error loading master_file_2"
+
+					with self.__elevator_queue_key:
+						for floor in range(0,N_FLOORS):
+							if self.__saved_master_queue[floor] == MY_ID:
+								self.__elevator_queue[floor][BUTTON_CALL_UP]=1
+							else:
+								self.__elevator_queue[floor][BUTTON_CALL_UP]=0
+						for floor in range(N_FLOORS,N_FLOORS*2):
+							if self.__saved_master_queue[floor] == MY_ID:
+								self.__elevator_queue[floor-N_FLOORS][BUTTON_CALL_DOWN]=1
+							else:
+								self.__elevator_queue[floor-N_FLOORS][BUTTON_CALL_DOWN]=0
+				#print self.__elevator_queue
 
 
 		except StandardError as error:

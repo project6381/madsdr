@@ -13,6 +13,7 @@ def main():
 		time.sleep(0.01)
 		driver = SlaveDriver()
 		while True:
+			master_queue = driver.read_saved_master_queue()
 			(master_floor, master_button) = driver.pop_floor_panel_queue()
 			#master_floor = None
 			#master_button = None
@@ -28,7 +29,7 @@ def main():
 			#for floor in range(0,N_FLOORS*2):
 
 
-			print driver.read_saved_master_queue()
+			print master_queue
 			(last_floor, next_floor, direction) = driver.read_position()
 			if last_floor == next_floor:
 				if direction == 0:
