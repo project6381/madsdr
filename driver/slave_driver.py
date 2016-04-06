@@ -51,9 +51,13 @@ class SlaveDriver:
 						for floor in range(0,N_FLOORS):
 							if self.__saved_master_queue[floor] == MY_ID:
 								self.__elevator_queue[floor][BUTTON_CALL_UP]=1
+							else:
+								self.__elevator_queue[floor][BUTTON_CALL_UP]=0
 						for floor in range(N_FLOORS,N_FLOORS*2):
 							if self.__saved_master_queue[floor] == MY_ID:
 								self.__elevator_queue[floor-N_FLOORS][BUTTON_CALL_DOWN]=1
+							else:
+								self.__elevator_queue[floor-N_FLOORS][BUTTON_CALL_DOWN]=0
 
 	def read_saved_master_queue(self):
 		with self.__master_queue_key:
@@ -283,10 +287,12 @@ class SlaveDriver:
 									self.__saved_internal_queue = pickle.load(internal_file)
 								assert internal_queue == self.__saved_internal_queue, "unknown error loading internal_file_2"
 							with self.__elevator_queue_key:
-								self.__elevator_queue[floor][button]=1
-
-					if self.__elevator_queue[floor][BUTTON_COMMAND] == 0:
-						internal_queue[floor] = 0
+								if self.__saved_internal_queue[floor] == 1:
+									self.__elevator_queue[floor][button]=1
+						with self.__elevator_queue_key:
+							if self.__elevator_queue[floor][BUTTON_COMMAND] == 0:
+								internal_queue[floor] = 0
+				print self.__elevator_queue
 
 
 		except StandardError as error:
